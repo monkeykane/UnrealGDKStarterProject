@@ -27,20 +27,20 @@ AStarterProjectGameMode::AStarterProjectGameMode()
 	PlayerStateClass = AStarterProjectPlayerState::StaticClass();
 }
 
-void AStarterProjectGameMode::Tick(float DeltaSeconds)
-{
-	if (GetNetMode() == NM_DedicatedServer && !bHasUpdatedMaxActorsToReplicate)
-	{
-		if (USpatialNetDriver* SND = Cast<USpatialNetDriver>(GetWorld()->GetNetDriver()))
-		{
-			if (SND->Connection && SND->Connection->IsConnected())
-			{
-				if (USpatialNetConnection* SNC = SND->GetSpatialOSNetConnection())
-				{
-					SNC->SetMaxActorsToReplicatePerFrame(MaxActorsToReplicate);
-					bHasUpdatedMaxActorsToReplicate = true;
-				}
-			}
-		}
-	}
-}
+//void AStarterProjectGameMode::Tick(float DeltaSeconds)
+//{
+//	if (GetNetMode() == NM_DedicatedServer && !bHasUpdatedMaxActorsToReplicate)
+//	{
+//		if (USpatialNetDriver* SND = Cast<USpatialNetDriver>(GetWorld()->GetNetDriver()))
+//		{
+//			if (SND->Connection && SND->Connection->IsConnected())
+//			{
+//				if (USpatialNetConnection* SNC = SND->GetSpatialOSNetConnection())
+//				{
+//					SNC->SetMaxActorsToReplicatePerFrame(MaxActorsToReplicate);
+//					bHasUpdatedMaxActorsToReplicate = true;
+//				}
+//			}
+//		}
+//	}
+//}
