@@ -49,11 +49,16 @@ AStarterProjectCharacter::AStarterProjectCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+	MaxHealth = 100000;
+	CurrentHealth = MaxHealth;
+
 }
 
 void AStarterProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CurrentHealth = MaxHealth;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -151,4 +156,47 @@ bool AStarterProjectCharacter::TestRPC_Validate()
 void AStarterProjectCharacter::TestRPC_Implementation()
 {
 
+}
+
+// homework
+void AStarterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AStarterProjectCharacter, CurrentHealth, COND_OwnerOnly);
+}
+
+void AStarterProjectCharacter::OnRep_CurrentHealth()
+{
+	if (GetNetMode() != NM_DedicatedServer)
+	{
+		AController* PC = GetController();
+		if (PC)
+		{
+			
+		}
+	}
+}
+
+void AStarterProjectCharacter::TakeDamageCrossServer_Implementation(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	int32 DamageDealt = FMath::Min(static_cast<int32>(Damage), CurrentHealth);
+	CurrentHealth -= DamageDealt;
+
+	if (CurrentHealth <= 0)
+	{
+		
+	}
+}
+
+float AStarterProjectCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	TakeDamageCrossServer(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	return Damage;
 }

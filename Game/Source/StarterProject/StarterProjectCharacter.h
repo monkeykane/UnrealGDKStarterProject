@@ -76,5 +76,27 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+public:
+	// homework 
+	UFUNCTION()
+		void OnRep_CurrentHealth();
+
+	float TakeDamage(float Damage, const struct FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(CrossServer, Reliable)
+	void TakeDamageCrossServer(float Damage, const struct FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+
+
+	// Max health this character can have.
+	UPROPERTY(EditDefaultsOnly, Category = "Health", meta = (ClampMin = "1"))
+		int32 MaxHealth;
+
+	// Current health of the character, can be at most MaxHealth.
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth)
+		int32 CurrentHealth;
+
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
 
