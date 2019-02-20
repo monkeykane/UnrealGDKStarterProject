@@ -51,6 +51,7 @@ AStarterProjectCharacter::AStarterProjectCharacter()
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 	MaxHealth = 100000;
 	CurrentHealth = MaxHealth;
+	InteractDistance = 500.0f;
 
 }
 
@@ -85,6 +86,9 @@ void AStarterProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AStarterProjectCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AStarterProjectCharacter::TouchStopped);
+
+	PlayerInputComponent->BindAction("SpawnGrenade", IE_Pressed, this, &AStarterProjectCharacter::SpawnGrenade);
+	PlayerInputComponent->BindAction("ThrowGrenade", IE_Released, this, &AStarterProjectCharacter::ThrowGrenade);
 }
 
 void AStarterProjectCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -199,4 +203,54 @@ float AStarterProjectCharacter::TakeDamage(float Damage, const FDamageEvent& Dam
 	TakeDamageCrossServer(Damage, DamageEvent, EventInstigator, DamageCauser);
 
 	return Damage;
+}
+
+void AStarterProjectCharacter::SpawnGrenade()
+{
+	ServerSpawnGrenade();
+}
+
+
+bool AStarterProjectCharacter::ServerSpawnGrenade_Validate()
+{
+	return true;
+}
+
+void AStarterProjectCharacter::ServerSpawnGrenade_Implementation()
+{
+	if (GrenadeTemplate == nullptr)
+	{
+		return;
+	}
+
+	FVector CameraCenter = GetFollowCamera()->GetComponentLocation();
+	FVector SpawnLocation = CameraCenter + GetFollowCamera()->GetForwardVector() * InteractDistance;
+	FTransform SpawnTranform(FRotator::ZeroRotator, SpawnLocation);
+
+	GetWorld()->SpawnActor<AActor>(GrenadeTemplate, SpawnTranform);
+}
+
+
+void AStarterProjectCharacter::ThrowGrenade()
+{
+	ServerThrowGrenade();
+}
+
+bool AStarterProjectCharacter::ServerThrowGrenade_Validate()
+{
+	return true;
+}
+
+void AStarterProjectCharacter::ServerThrowGrenade_Implementation()
+{
+	//if (TestCubeTemplate == nullptr)
+	//{
+	//	return;
+	//}
+
+	//FVector CameraCenter = GetFollowCamera()->GetComponentLocation();
+	//FVector SpawnLocation = CameraCenter + GetFollowCamera()->GetForwardVector() * InteractDistance;
+	//FTransform SpawnTranform(FRotator::ZeroRotator, SpawnLocation);
+
+	//GetWorld()->SpawnActor<AActor>(TestCubeTemplate, SpawnTranform);
 }

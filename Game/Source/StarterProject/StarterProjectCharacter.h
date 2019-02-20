@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "EntityRegistry.h"
 #include "GameFramework/Character.h"
+#include "AProjectile.h"
 #include "StarterProjectCharacter.generated.h"
 
 UCLASS(config=Game, SpatialType)
@@ -87,6 +88,13 @@ public:
 	UFUNCTION(CrossServer, Reliable)
 	void TakeDamageCrossServer(float Damage, const struct FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
+	// RPC to tell the server to spawn grenade
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerSpawnGrenade();
+
+	// RPC to tell the server to throw grenade.
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerThrowGrenade();
 
 	// Max health this character can have.
 	UPROPERTY(EditDefaultsOnly, Category = "Health", meta = (ClampMin = "1"))
@@ -96,7 +104,21 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth)
 		int32 CurrentHealth;
 
+	// Cube to spawn when the player presses "SpawnGrenade".
+	UPROPERTY(EditDefaultsOnly, Category = "Homework/Grenade")
+	TSubclassOf<AAProjectile>	GrenadeTemplate;
+
+	// Maximum distance at which the player can interact with objects.
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction", meta = (ClampMin = "0.0"))
+		float InteractDistance;
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+private:
+	// Spawn Grenade
+	void SpawnGrenade();
+
+	// Throw Grenade
+	void ThrowGrenade();
 };
 
