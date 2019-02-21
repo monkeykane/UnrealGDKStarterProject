@@ -49,7 +49,7 @@ AStarterProjectCharacter::AStarterProjectCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
-	MaxHealth = 100000;
+	MaxHealth = 1000;
 	CurrentHealth = MaxHealth;
 	InteractDistance = 20.0f;
 
@@ -59,7 +59,24 @@ void AStarterProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FTransform SpawnTranform(FRotator::ZeroRotator, FVector::ZeroVector);
+
 	CurrentHealth = MaxHealth;
+
+	if (FakeGrenadeTemplate == nullptr)
+	{
+		return;
+	}
+
+	currentFakeProjectile = GetWorld()->SpawnActor<AAFakeProjectile>(FakeGrenadeTemplate, SpawnTranform);
+	if (currentFakeProjectile != nullptr)
+	{
+		//currentProjectile->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+		currentFakeProjectile->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("soc_righthand"));
+		currentFakeProjectile->SetActorHiddenInGame(true);
+	}
+
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -167,7 +184,7 @@ void AStarterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(AStarterProjectCharacter, CurrentHealth, COND_OwnerOnly);
+	DOREPLIFETIME(AStarterProjectCharacter, CurrentHealth);
 }
 
 void AStarterProjectCharacter::OnRep_CurrentHealth()
@@ -200,9 +217,24 @@ void AStarterProjectCharacter::TakeDamageCrossServer_Implementation(float Damage
 
 float AStarterProjectCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	TakeDamageCrossServer(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (CurrentHealth <= 0.f)
+	{
+		CurrentHealth = MaxHealth;
+		return 0.f;
+	}
 
-	return Damage;
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	if (ActualDamage > 0.f)
+	{
+		int32 DamageDealt = FMath::Min(static_cast<int32>(ActualDamage), CurrentHealth);
+
+		CurrentHealth -= DamageDealt;
+	}
+
+	return ActualDamage;
+
+	//TakeDamageCrossServer(Damage, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void AStarterProjectCharacter::SpawnGrenade()
@@ -218,18 +250,9 @@ bool AStarterProjectCharacter::ServerSpawnGrenade_Validate()
 
 void AStarterProjectCharacter::ServerSpawnGrenade_Implementation()
 {
-	if (FakeGrenadeTemplate == nullptr)
+	if (currentFakeProjectile != nullptr && IsValid(currentFakeProjectile) )
 	{
-		return;
-	}
-
-	FTransform SpawnTranform(FRotator::ZeroRotator, FVector::ZeroVector);
-
-	currentFakeProjectile = GetWorld()->SpawnActor<AAFakeProjectile>(FakeGrenadeTemplate, SpawnTranform);
-	if (currentFakeProjectile != nullptr)
-	{
-		//currentProjectile->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
-		currentFakeProjectile->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("soc_righthand"));
+		currentFakeProjectile->SetActorHiddenInGame(false);
 	}
 }
 
@@ -241,8 +264,7 @@ void AStarterProjectCharacter::ThrowGrenade()
 
 bool AStarterProjectCharacter::ServerThrowGrenade_Validate()
 {
-	//return 
-	return (currentFakeProjectile != nullptr && IsValid(currentFakeProjectile));
+	return true;
 }
 
 void AStarterProjectCharacter::ServerThrowGrenade_Implementation()
@@ -251,9 +273,10 @@ void AStarterProjectCharacter::ServerThrowGrenade_Implementation()
 	{
 		return;
 	}
-	currentFakeProjectile->DetachAllSceneComponents(GetMesh(), FDetachmentTransformRules::KeepWorldTransform);
-	currentFakeProjectile->Destroy(true, false);
-	currentFakeProjectile = nullptr;
+	if (currentFakeProjectile != nullptr && IsValid(currentFakeProjectile))
+	{
+		currentFakeProjectile->SetActorHiddenInGame(true);
+	}
 
 	FVector CameraCenter = GetFollowCamera()->GetComponentLocation();
 	FVector SpawnLocation = CameraCenter + GetFollowCamera()->GetForwardVector() * InteractDistance;

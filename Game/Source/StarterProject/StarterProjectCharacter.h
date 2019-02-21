@@ -98,11 +98,11 @@ public:
 		void ServerThrowGrenade();
 
 	// Max health this character can have.
-	UPROPERTY(EditDefaultsOnly, Category = "Health", meta = (ClampMin = "1"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health", meta = (ClampMin = "1"))
 		int32 MaxHealth;
 
 	// Current health of the character, can be at most MaxHealth.
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Health", ReplicatedUsing = OnRep_CurrentHealth)
 		int32 CurrentHealth;
 
 	// Cube to spawn when the player presses "SpawnGrenade".

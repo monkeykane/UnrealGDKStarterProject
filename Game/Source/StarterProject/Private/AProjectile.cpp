@@ -55,11 +55,11 @@ void AAProjectile::OnImpact(const FHitResult& HitResult)
 	{
 		//Explode(HitResult);
 		//DisableAndDestroy();
-		if (MovementComp)
-		{
-			float speed = (MovementComp->Velocity).Size();
-			MovementComp->Velocity = speed * 0.5 * (MovementComp->Velocity).GetSafeNormal();
-		}
+	//	if (MovementComp)
+	//	{
+	//		float speed = (MovementComp->Velocity).Size();
+	//		MovementComp->Velocity = speed * 0.5 * (MovementComp->Velocity).GetSafeNormal();
+	//	}
 	}
 }
 
@@ -70,7 +70,7 @@ void AAProjectile::Explode(const FHitResult& Impact)
 
 	if (WeaponConfig.ExplosionDamage > 0 && WeaponConfig.ExplosionRadius > 0 && WeaponConfig.DamageType)
 	{
-		UGameplayStatics::ApplyRadialDamage(this, WeaponConfig.ExplosionDamage, NudgedImpactLocation, WeaponConfig.ExplosionRadius, WeaponConfig.DamageType, TArray<AActor*>(), this, MyController.Get());
+		UGameplayStatics::ApplyRadialDamage(this, WeaponConfig.ExplosionDamage, NudgedImpactLocation, WeaponConfig.ExplosionRadius, WeaponConfig.DamageType, TArray<AActor*>(), this, MyController.Get(), false);
 	}
 
 	bExploded = true;
@@ -141,3 +141,8 @@ void AAProjectile::Tick(float DeltaTime)
 
 }
 
+void AAProjectile::LifeSpanExpired()
+{
+	OnRep_Exploded();
+	Super::LifeSpanExpired();
+}
