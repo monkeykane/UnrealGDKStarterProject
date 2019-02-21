@@ -24,10 +24,10 @@ AAProjectile::AAProjectile(const FObjectInitializer& ObjectInitializer) : Super(
 
 	MovementComp = ObjectInitializer.CreateDefaultSubobject<UProjectileMovementComponent>(this, TEXT("ProjectileComp"));
 	MovementComp->UpdatedComponent = CollisionComp;
-	MovementComp->InitialSpeed = 2000.0f;
+	MovementComp->InitialSpeed = 1500.f;
 	MovementComp->MaxSpeed = 2000.0f;
 	MovementComp->bRotationFollowsVelocity = true;
-	MovementComp->ProjectileGravityScale = 0.f;
+	MovementComp->ProjectileGravityScale = 1.f;
 
 
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -55,6 +55,11 @@ void AAProjectile::OnImpact(const FHitResult& HitResult)
 	{
 		//Explode(HitResult);
 		//DisableAndDestroy();
+		if (MovementComp)
+		{
+			float speed = (MovementComp->Velocity).Size();
+			MovementComp->Velocity = speed * 0.5 * (MovementComp->Velocity).GetSafeNormal();
+		}
 	}
 }
 

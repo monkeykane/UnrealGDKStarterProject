@@ -51,7 +51,7 @@ AStarterProjectCharacter::AStarterProjectCharacter()
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 	MaxHealth = 100000;
 	CurrentHealth = MaxHealth;
-	InteractDistance = 500.0f;
+	InteractDistance = 20.0f;
 
 }
 
@@ -218,16 +218,19 @@ bool AStarterProjectCharacter::ServerSpawnGrenade_Validate()
 
 void AStarterProjectCharacter::ServerSpawnGrenade_Implementation()
 {
-	if (GrenadeTemplate == nullptr)
+	if (FakeGrenadeTemplate == nullptr)
 	{
 		return;
 	}
 
-	FVector CameraCenter = GetFollowCamera()->GetComponentLocation();
-	FVector SpawnLocation = CameraCenter + GetFollowCamera()->GetForwardVector() * InteractDistance;
-	FTransform SpawnTranform(FRotator::ZeroRotator, SpawnLocation);
+	FTransform SpawnTranform(FRotator::ZeroRotator, FVector::ZeroVector);
 
-	GetWorld()->SpawnActor<AActor>(GrenadeTemplate, SpawnTranform);
+	currentFakeProjectile = GetWorld()->SpawnActor<AAFakeProjectile>(FakeGrenadeTemplate, SpawnTranform);
+	if (currentFakeProjectile != nullptr)
+	{
+		//currentProjectile->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+		currentFakeProjectile->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("soc_righthand"));
+	}
 }
 
 
@@ -238,19 +241,27 @@ void AStarterProjectCharacter::ThrowGrenade()
 
 bool AStarterProjectCharacter::ServerThrowGrenade_Validate()
 {
-	return true;
+	//return 
+	return (currentFakeProjectile != nullptr && IsValid(currentFakeProjectile));
 }
 
 void AStarterProjectCharacter::ServerThrowGrenade_Implementation()
 {
-	//if (TestCubeTemplate == nullptr)
-	//{
-	//	return;
-	//}
+	if (GrenadeTemplate == nullptr)
+	{
+		return;
+	}
+	currentFakeProjectile->DetachAllSceneComponents(GetMesh(), FDetachmentTransformRules::KeepWorldTransform);
+	currentFakeProjectile->Destroy(true, false);
+	currentFakeProjectile = nullptr;
 
-	//FVector CameraCenter = GetFollowCamera()->GetComponentLocation();
-	//FVector SpawnLocation = CameraCenter + GetFollowCamera()->GetForwardVector() * InteractDistance;
-	//FTransform SpawnTranform(FRotator::ZeroRotator, SpawnLocation);
+	FVector CameraCenter = GetFollowCamera()->GetComponentLocation();
+	FVector SpawnLocation = CameraCenter + GetFollowCamera()->GetForwardVector() * InteractDistance;
+	FTransform SpawnTranform(FRotator::ZeroRotator, SpawnLocation);
 
-	//GetWorld()->SpawnActor<AActor>(TestCubeTemplate, SpawnTranform);
+	currentProjectile = GetWorld()->SpawnActor<AAProjectile>(GrenadeTemplate, SpawnTranform);
+
+	FVector dir = (SpawnLocation - CameraCenter).GetSafeNormal();
+	currentProjectile->InitVelocity(dir);
+
 }

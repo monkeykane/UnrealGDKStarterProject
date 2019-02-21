@@ -6,6 +6,7 @@
 #include "EntityRegistry.h"
 #include "GameFramework/Character.h"
 #include "AProjectile.h"
+#include "AFakeProjectile.h"
 #include "StarterProjectCharacter.generated.h"
 
 UCLASS(config=Game, SpatialType)
@@ -108,9 +109,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Homework/Grenade")
 	TSubclassOf<AAProjectile>	GrenadeTemplate;
 
+	// Cube to spawn when the player presses "SpawnGrenade".
+	UPROPERTY(EditDefaultsOnly, Category = "Homework/Grenade")
+	TSubclassOf<AAFakeProjectile>	FakeGrenadeTemplate;
+
 	// Maximum distance at which the player can interact with objects.
-	UPROPERTY(EditDefaultsOnly, Category = "Interaction", meta = (ClampMin = "0.0"))
-		float InteractDistance;
+	UPROPERTY(EditDefaultsOnly, Category = "Homework/Grenade", meta = (ClampMin = "0.0"))
+	float InteractDistance;
+
+private:
+	AAProjectile * currentProjectile = nullptr;
+	AAFakeProjectile* currentFakeProjectile = nullptr;
+
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
