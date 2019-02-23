@@ -1,6 +1,7 @@
 // Copyright (c) Improbable Worlds Ltd, All Rights Reserved
 
 #include "StarterProjectCharacter.h"
+#include "TimerManager.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -214,12 +215,20 @@ void AStarterProjectCharacter::TakeDamageCrossServer_Implementation(float Damage
 		
 	}
 }
+void AStarterProjectCharacter::OnRecover()
+{
+	CurrentHealth = MaxHealth;
+	GetWorldTimerManager().ClearTimer(TimeHandle_Recover);
+}
 
 float AStarterProjectCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	if (CurrentHealth <= 0.f)
 	{
-		CurrentHealth = MaxHealth;
+		if (!GetWorldTimerManager().TimerExists(TimeHandle_Recover))
+		{
+			GetWorldTimerManager().SetTimer(TimeHandle_Recover, this, &AStarterProjectCharacter::OnRecover, 5.0f, false);
+		}
 		return 0.f;
 	}
 
@@ -231,6 +240,17 @@ float AStarterProjectCharacter::TakeDamage(float Damage, const FDamageEvent& Dam
 
 		CurrentHealth -= DamageDealt;
 	}
+
+	if (CurrentHealth <= 0.f)
+	{
+		if (!GetWorldTimerManager().TimerExists(TimeHandle_Recover))
+		{
+			GetWorldTimerManager().SetTimer(TimeHandle_Recover, this, &AStarterProjectCharacter::OnRecover, 5.0f, false);
+		}
+		return 0.f;
+	}
+
+
 
 	return ActualDamage;
 
@@ -287,4 +307,21 @@ void AStarterProjectCharacter::ServerThrowGrenade_Implementation()
 	FVector dir = (SpawnLocation - CameraCenter).GetSafeNormal();
 	currentProjectile->InitVelocity(dir);
 
+}
+
+void AStarterProjectCharacter::HitByGrenade(AAProjectile* proj)
+{
+	if (Role == ROLE_Authority)
+	{
+		if (proj == nullptr || proj->bExploded)
+			return;
+
+			FPointDamageEvent PointDmg;
+			PointDmg.DamageTypeClass = proj->WeaponConfig.DamageType;
+			//PointDmg.HitInfo = HitResult;
+			//PointDmg.ShotDirection = ShootDir;
+			PointDmg.Damage = 100;
+
+			TakeDamage(PointDmg.Damage, PointDmg, proj->MyController.Get(), proj);
+	}
 }

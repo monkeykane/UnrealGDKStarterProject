@@ -34,6 +34,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Weapon")
+	void HitByGrenade(AAProjectile* proj);
+
+
 protected:
 
 	/** Called for forwards/backward input */
@@ -117,6 +121,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Homework/Grenade", meta = (ClampMin = "0.0"))
 	float InteractDistance;
 
+	FTimerHandle	TimeHandle_Recover;
+
 private:
 	AAProjectile * currentProjectile = nullptr;
 	AAFakeProjectile* currentFakeProjectile = nullptr;
@@ -130,5 +136,7 @@ private:
 
 	// Throw Grenade
 	void ThrowGrenade();
+
+	void OnRecover();
 };
 

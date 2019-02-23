@@ -51,16 +51,22 @@ void AAProjectile::PostInitializeComponents()
 
 void AAProjectile::OnImpact(const FHitResult& HitResult)
 {
-	if (Role == ROLE_Authority && !bExploded)
-	{
-		//Explode(HitResult);
-		//DisableAndDestroy();
-	//	if (MovementComp)
+	//if (Role == ROLE_Authority && !bExploded)
+	//{
+	//	if (HitResult.Actor.IsValid())
 	//	{
-	//		float speed = (MovementComp->Velocity).Size();
-	//		MovementComp->Velocity = speed * 0.5 * (MovementComp->Velocity).GetSafeNormal();
+	//		AActor* ImpactActor = HitResult.Actor.Get();
+	//		{
+	//			FPointDamageEvent PointDmg;
+	//			PointDmg.DamageTypeClass = WeaponConfig.DamageType;
+	//			PointDmg.HitInfo = HitResult;
+	//			//PointDmg.ShotDirection = ShootDir;
+	//			PointDmg.Damage = 100;
+
+	//			ImpactActor->TakeDamage(PointDmg.Damage, PointDmg, MyController.Get(), this);
+	//		}
 	//	}
-	}
+	//}
 }
 
 void AAProjectile::Explode(const FHitResult& Impact)

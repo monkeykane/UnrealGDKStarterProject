@@ -61,7 +61,7 @@ class STARTERPROJECT_API AAProjectile : public AActor
 	UFUNCTION()
 	void OnImpact(const FHitResult& HitResult);
 
-private:
+public:
 	/** movement component */
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
 		UProjectileMovementComponent* MovementComp;

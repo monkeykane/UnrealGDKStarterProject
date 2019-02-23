@@ -179,6 +179,7 @@ void ABotAIController::ShootEnemy()
 	if (bCanShoot)
 	{
 		//MyBot->StartWeaponFire();
+		MyBot->ServerThrowGrenade();
 	}
 }
 
