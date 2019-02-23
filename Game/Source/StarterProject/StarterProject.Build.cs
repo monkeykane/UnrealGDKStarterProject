@@ -18,7 +18,10 @@ public class StarterProject : ModuleRules
 				"Sockets",
 				"OnlineSubsystemUtils",
 				"PhysXVehicles",
-				"SpatialGDK"
+                "NavigationSystem",
+                "AIModule",
+                "GameplayTasks",
+                "SpatialGDK"
 			});
 	}
 }
