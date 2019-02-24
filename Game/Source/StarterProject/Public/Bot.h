@@ -17,6 +17,12 @@ class STARTERPROJECT_API ABot : public AStarterProjectCharacter
 public:
 	ABot();
 
+	/** initial setup */
+	virtual void PostInitializeComponents() override;
+	
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
 	UPROPERTY(EditAnywhere, Category = Behavior)
 	class UBehaviorTree* BotBehavior;
 	

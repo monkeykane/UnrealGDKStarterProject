@@ -76,7 +76,8 @@ void AAProjectile::Explode(const FHitResult& Impact)
 
 	if (WeaponConfig.ExplosionDamage > 0 && WeaponConfig.ExplosionRadius > 0 && WeaponConfig.DamageType)
 	{
-		UGameplayStatics::ApplyRadialDamage(this, WeaponConfig.ExplosionDamage, NudgedImpactLocation, WeaponConfig.ExplosionRadius, WeaponConfig.DamageType, TArray<AActor*>(), this, MyController.Get(), false);
+		AController* causerController = Instigator ? GetInstigatorController() : nullptr;
+		UGameplayStatics::ApplyRadialDamage(this, WeaponConfig.ExplosionDamage, NudgedImpactLocation, WeaponConfig.ExplosionRadius, WeaponConfig.DamageType, TArray<AActor*>(), this, causerController, false);
 	}
 
 	bExploded = true;

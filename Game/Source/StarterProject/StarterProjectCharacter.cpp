@@ -11,7 +11,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "SpatialNetDriver.h"
-
+#include "MyPlayerController.h"
+#include "BotAIController.h"
+#include "BotGameState.h"
 #include "UnrealNetwork.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,6 +188,7 @@ void AStarterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AStarterProjectCharacter, CurrentHealth);
+	DOREPLIFETIME(AStarterProjectCharacter, ScorePoint);
 }
 
 void AStarterProjectCharacter::OnRep_CurrentHealth()
@@ -243,6 +246,50 @@ float AStarterProjectCharacter::TakeDamage(float Damage, const FDamageEvent& Dam
 
 	if (CurrentHealth <= 0.f)
 	{
+		if (EventInstigator)
+		{
+			AStarterProjectCharacter* causer = Cast<AStarterProjectCharacter>(EventInstigator->GetPawn());
+			if (causer)
+			{
+				if (causer == this)
+				{
+					ScorePoint -= 20;
+					if (AMyPlayerController* player = Cast<AMyPlayerController>(EventInstigator))
+					{
+						if (ABotGameState* GS = GetWorld()->GetGameState<ABotGameState>())
+						{
+							GS->UpdateScorePoints(player->GetDefaultPlayerName(), -20);
+						}
+					}
+					else if(ABotAIController* botcontroller = Cast<ABotAIController>(EventInstigator))
+					{
+						if (ABotGameState* GS = GetWorld()->GetGameState<ABotGameState>())
+						{
+							GS->UpdateScorePoints(botcontroller->GetDefaultPlayerName(), -20);
+						}
+					}
+				}
+				else
+				{
+					ScorePoint += 30;
+					if (AMyPlayerController* player = Cast<AMyPlayerController>(EventInstigator))
+					{
+						if (ABotGameState* GS = GetWorld()->GetGameState<ABotGameState>())
+						{
+							GS->UpdateScorePoints(player->GetDefaultPlayerName(), 30);
+						}
+					}
+					else if (ABotAIController* botcontroller = Cast<ABotAIController>(EventInstigator))
+					{
+						if (ABotGameState* GS = GetWorld()->GetGameState<ABotGameState>())
+						{
+							GS->UpdateScorePoints(botcontroller->GetDefaultPlayerName(), 30);
+						}
+					}
+				}
+			}
+
+		}
 		if (!GetWorldTimerManager().TimerExists(TimeHandle_Recover))
 		{
 			GetWorldTimerManager().SetTimer(TimeHandle_Recover, this, &AStarterProjectCharacter::OnRecover, 5.0f, false);
@@ -302,10 +349,20 @@ void AStarterProjectCharacter::ServerThrowGrenade_Implementation()
 	FVector SpawnLocation = CameraCenter + GetFollowCamera()->GetForwardVector() * InteractDistance;
 	FTransform SpawnTranform(FRotator::ZeroRotator, SpawnLocation);
 
-	currentProjectile = GetWorld()->SpawnActor<AAProjectile>(GrenadeTemplate, SpawnTranform);
+	//currentProjectile = GetWorld()->SpawnActor<AAProjectile>(GrenadeTemplate, SpawnTranform);
+
+	currentProjectile = Cast<AAProjectile>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, GrenadeTemplate, SpawnTranform));
+
 
 	FVector dir = (SpawnLocation - CameraCenter).GetSafeNormal();
-	currentProjectile->InitVelocity(dir);
+	if (currentProjectile)
+	{
+		currentProjectile->Instigator = this;
+		currentProjectile->SetOwner(this);
+
+		currentProjectile->InitVelocity(dir);
+		UGameplayStatics::FinishSpawningActor(currentProjectile, SpawnTranform);
+	}
 
 }
 

@@ -8,6 +8,9 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "SpatialNetDriver.h"
+#include "Connection/SpatialWorkerConnection.h"
+#include "BotGameState.h"
 
 ABotAIController::ABotAIController()
 {
@@ -164,22 +167,25 @@ bool ABotAIController::HasWeaponLOSToEnemy(AActor* InEnemyActor, const bool bAny
 
 void ABotAIController::ShootEnemy()
 {
-	ABot* MyBot = Cast<ABot>(GetPawn());
-
-	bool bCanShoot = false;
-	APawn* Enemy = GetEnemy();
-	if (Enemy!=nullptr)
+	if (HasAuthority())
 	{
-		if (LineOfSightTo(Enemy, MyBot->GetActorLocation()))
+		ABot* MyBot = Cast<ABot>(GetPawn());
+
+		bool bCanShoot = false;
+		APawn* Enemy = GetEnemy();
+		if (Enemy != nullptr)
 		{
-			bCanShoot = true;
+			if (LineOfSightTo(Enemy, MyBot->GetActorLocation()))
+			{
+				bCanShoot = true;
+			}
 		}
-	}
 
-	if (bCanShoot)
-	{
-		//MyBot->StartWeaponFire();
-		MyBot->ServerThrowGrenade();
+		if (bCanShoot)
+		{
+			//MyBot->StartWeaponFire();
+			MyBot->ServerThrowGrenade();
+		}
 	}
 }
 
@@ -235,4 +241,28 @@ void ABotAIController::GameHasEnded(AActor* EndGameFocus, bool bIsWinner)
 
 	// Clear any enemy
 	SetEnemy(NULL);
+}
+
+FString ABotAIController::GetDefaultPlayerName()
+{
+	//if (USpatialNetDriver* SpatialNetDriver = Cast<USpatialNetDriver>(GetNetDriver()))
+	//{
+	//	return SpatialNetDriver->Connection->GetWorkerId();
+	//}
+	return "Bot" + FGuid::NewGuid().ToString() + GetName();
+}
+
+
+// Called when the game starts or when spawned
+void ABotAIController::BeginPlay()
+{
+	Super::BeginPlay();
+	if (HasAuthority())
+	{
+		//if (ABotGameState* GS = GetWorld()->GetGameState<ABotGameState>())
+		//{
+		//	GS->RegesterPlayer(GetDefaultPlayerName());
+		//}
+	}
+
 }

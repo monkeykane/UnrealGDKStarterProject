@@ -103,11 +103,16 @@ public:
 
 	// Max health this character can have.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health", meta = (ClampMin = "1"))
-		int32 MaxHealth;
+	int32 MaxHealth;
 
 	// Current health of the character, can be at most MaxHealth.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Health", ReplicatedUsing = OnRep_CurrentHealth)
-		int32 CurrentHealth;
+	int32 CurrentHealth;
+
+	// Game score point.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Score")
+	int32 ScorePoint;
+
 
 	// Cube to spawn when the player presses "SpawnGrenade".
 	UPROPERTY(EditDefaultsOnly, Category = "Homework/Grenade")

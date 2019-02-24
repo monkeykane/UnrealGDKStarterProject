@@ -28,6 +28,13 @@ class STARTERPROJECT_API ABotAIController : public AAIController
 public:
 	ABotAIController();
 
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	// Gets a default player name based upon the worker's ID.
+	// Generates a GUID if we're not running on a SpatialOS worker.
+	FString GetDefaultPlayerName();
+
 	// Begin AController interface
 	virtual void GameHasEnded(class AActor* EndGameFocus = NULL, bool bIsWinner = false) override;
 	virtual void Possess(class APawn* InPawn) override;
