@@ -10,7 +10,8 @@ void UUI_Score_Widget::SetPlayerName(const FString& NewPlayerName, bool bSelf)
 {
 	if (PlayerNameText)
 	{
-		PlayerNameText->SetText(FText::FromString("[ME]"+NewPlayerName));
+		FString playername = bSelf ? "[ME]" + NewPlayerName : NewPlayerName;
+		PlayerNameText->SetText(FText::FromString(playername));
 	}
 }
 

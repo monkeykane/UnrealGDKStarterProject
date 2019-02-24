@@ -20,11 +20,11 @@ class STARTERPROJECT_API UUI_ScoreBoard : public UUserWidget
 public:
 	void UpdateScoreList(const TArray<FPlayerScore>& PlayerLists ,const FString& owner);
 
-private:
+public:
 	UPROPERTY(EditDefaultsOnly, Category = "Team Score")
 		TSubclassOf<class UUI_Score_Widget> ScoreWidgetTemplate;
 
-	UPROPERTY(VisibleAnywhere, Category = "Team Score")
+	UPROPERTY(BlueprintReadOnly, Category = "Team Score")
 		TMap<FString, UUI_Score_Widget*>		ScoreWidgets;
 
 	UPROPERTY(meta = (BindWidget))
